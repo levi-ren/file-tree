@@ -19,14 +19,18 @@ import { useFiles } from "../useFiles";
 type FileItemProps = {
   file: File | string;
   setActiveItem: (item: string) => void;
+  directory: string;
 };
 
-const FileItem = ({ file, setActiveItem }: FileItemProps) => {
+const FileItem = ({ file, setActiveItem, directory }: FileItemProps) => {
   const [open, setOpen] = useState(false);
 
   if (typeof file === "string") {
     return (
-      <ListItemButton sx={{ pl: 4 }} onClick={() => setActiveItem(file)}>
+      <ListItemButton
+        sx={{ pl: 4 }}
+        onClick={() => setActiveItem(`${directory}/${file}`)}
+      >
         <ListItemIcon>
           <InsertDriveFileTwoToneIcon />
         </ListItemIcon>
@@ -51,7 +55,11 @@ const FileItem = ({ file, setActiveItem }: FileItemProps) => {
               sx={{ pl: 4 }}
               key={typeof child === "string" ? child : child.name}
             >
-              <FileItem file={child} setActiveItem={setActiveItem} />
+              <FileItem
+                file={child}
+                setActiveItem={setActiveItem}
+                directory={`${directory}/${file.name}`}
+              />
             </Box>
           ))}
         </Collapse>
@@ -67,37 +75,6 @@ const FileItem = ({ file, setActiveItem }: FileItemProps) => {
       <ListItemText primary={file.name} />
     </ListItemButton>
   );
-};
-
-const getParentNodes = (
-  target: string,
-  nodes: (string | File)[],
-  ancestors: string[] = []
-): string[] | undefined => {
-  for (const node of nodes) {
-    if (typeof node === "string") {
-      if (node === target) {
-        return ancestors.concat(node);
-      }
-    } else {
-      if (node.name === target) {
-        return ancestors.concat(node.name);
-      }
-
-      if (node.children) {
-        const ancestor = getParentNodes(
-          target,
-          node.children,
-          ancestors.concat(node.name)
-        );
-
-        if (ancestor) {
-          return ancestor;
-        }
-      }
-    }
-  }
-  return undefined;
 };
 
 function Version3() {
@@ -132,7 +109,12 @@ function Version3() {
         }
       >
         {files.map((file) => (
-          <FileItem file={file} key={file.name} setActiveItem={setActiveItem} />
+          <FileItem
+            file={file}
+            key={file.name}
+            setActiveItem={setActiveItem}
+            directory={file.name}
+          />
         ))}
       </List>
       <Stack
@@ -145,7 +127,7 @@ function Version3() {
         justifyContent="center"
         alignItems="center"
       >
-        {activeItem && getParentNodes(activeItem, files)?.join("/")}
+        {activeItem}
       </Stack>
     </Stack>
   );
