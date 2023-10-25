@@ -58,7 +58,11 @@ const FileItem = ({ file, setActiveItem, directory }: FileItemProps) => {
               <FileItem
                 file={child}
                 setActiveItem={setActiveItem}
-                directory={`${directory}/${file.name}`}
+                directory={
+                  typeof child === "string"
+                    ? directory
+                    : directory.concat(`/${child.name}`)
+                }
               />
             </Box>
           ))}
