@@ -1,10 +1,13 @@
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import FolderTwoToneIcon from "@mui/icons-material/FolderTwoTone";
+import InsertDriveFileTwoToneIcon from "@mui/icons-material/InsertDriveFileTwoTone";
 import {
   Box,
   Collapse,
   List,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
   ListSubheader,
   Stack,
@@ -24,6 +27,9 @@ const FileItem = ({ file, setActiveItem }: FileItemProps) => {
   if (typeof file === "string") {
     return (
       <ListItemButton sx={{ pl: 4 }} onClick={() => setActiveItem(file)}>
+        <ListItemIcon>
+          <InsertDriveFileTwoToneIcon />
+        </ListItemIcon>
         <ListItemText primary={file} />
       </ListItemButton>
     );
@@ -33,6 +39,9 @@ const FileItem = ({ file, setActiveItem }: FileItemProps) => {
     return (
       <>
         <ListItemButton onClick={() => setOpen((p) => !p)}>
+          <ListItemIcon>
+            <FolderTwoToneIcon />
+          </ListItemIcon>
           <ListItemText primary={file.name} />
           {open ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
@@ -52,9 +61,43 @@ const FileItem = ({ file, setActiveItem }: FileItemProps) => {
 
   return (
     <ListItemButton>
+      <ListItemIcon>
+        <FolderTwoToneIcon />
+      </ListItemIcon>
       <ListItemText primary={file.name} />
     </ListItemButton>
   );
+};
+
+const getParentNodes = (
+  target: string,
+  nodes: (string | File)[],
+  ancestors: string[] = []
+): string[] | undefined => {
+  for (const node of nodes) {
+    if (typeof node === "string") {
+      if (node === target) {
+        return ancestors.concat(node);
+      }
+    } else {
+      if (node.name === target) {
+        return ancestors.concat(node.name);
+      }
+
+      if (node.children) {
+        const ancestor = getParentNodes(
+          target,
+          node.children,
+          ancestors.concat(node.name)
+        );
+
+        if (ancestor) {
+          return ancestor;
+        }
+      }
+    }
+  }
+  return undefined;
 };
 
 function Version3() {
@@ -102,7 +145,7 @@ function Version3() {
         justifyContent="center"
         alignItems="center"
       >
-        {activeItem}
+        {activeItem && getParentNodes(activeItem, files)?.join("/")}
       </Stack>
     </Stack>
   );
